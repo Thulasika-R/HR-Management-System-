@@ -170,7 +170,7 @@ const App = {
             </div>
             <h2 class="role-card-title">Employee Portal</h2>
             <p class="role-card-desc">
-              Access your personal workspace, punch daily attendance, submit 10+ time-off types, and view pro-rated salary payslips.
+              Access personal workspace, daily punch timer, 10+ leave policies, and salary payslips.
             </p>
             <button class="btn btn-primary" style="width:100%; margin-top:0.5rem;">
               Continue as Employee <i class="fa-solid fa-arrow-right" style="margin-left:4px;"></i>
@@ -184,12 +184,28 @@ const App = {
             </div>
             <h2 class="role-card-title">Admin / HR Portal</h2>
             <p class="role-card-desc">
-              Manage enterprise workforce, generate immutable Login IDs, approve leaves with atomic sync, and configure payroll formulas.
+              Manage enterprise workforce, generate immutable Login IDs, approve leaves, and configure payroll.
             </p>
             <button class="btn btn-secondary" style="width:100%; margin-top:0.5rem; border-color:var(--primary); color:#a5b4fc;">
               Continue as Administrator <i class="fa-solid fa-arrow-right" style="margin-left:4px;"></i>
             </button>
           </div>
+        </div>
+
+        <!-- ArcFace Instant Face ID Sign-In Banner -->
+        <div style="margin-top:2rem; max-width:800px; width:100%; background:linear-gradient(135deg, rgba(99,102,241,0.15), rgba(6,182,212,0.1)); border:1px solid rgba(99,102,241,0.4); border-radius:var(--radius-xl); padding:1.5rem 2rem; display:flex; align-items:center; justify-content:space-between; gap:1.5rem; flex-wrap:wrap; box-shadow:0 0 30px rgba(99,102,241,0.25);">
+          <div style="display:flex; align-items:center; gap:1rem; text-align:left;">
+            <div style="width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#06b6d4); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.4rem; box-shadow:0 0 15px rgba(99,102,241,0.8);">
+              <i class="fa-solid fa-expand"></i>
+            </div>
+            <div>
+              <h3 style="font-size:1.15rem; color:#fff;">Dayflow Vision Ω — ArcFace Biometric Sign-In</h3>
+              <p style="font-size:0.825rem; color:#c7d2fe; margin-top:2px;">Touchless 512-D Deep Metric Face ID authentication with anti-spoof liveness shield</p>
+            </div>
+          </div>
+          <button class="btn btn-primary" style="background:linear-gradient(135deg,#6366f1,#06b6d4); box-shadow:0 0 20px rgba(99,102,241,0.5); padding:0.75rem 1.5rem;" onclick="FaceBiometricModal.open('FACE_LOGIN')">
+            <i class="fa-solid fa-expand"></i> Instant Face ID Sign-In
+          </button>
         </div>
       </div>
     `;
@@ -218,8 +234,20 @@ const App = {
             <span class="badge badge-${badgeColor}" style="margin-bottom:0.5rem; letter-spacing:0.05em;">${badgeText}</span>
             <h2 style="font-size:1.65rem; font-weight:800; letter-spacing:-0.03em;">${title}</h2>
             <p style="font-size:0.85rem; color:var(--text-secondary); margin-top:4px;">
-              ${isEmployee ? 'Sign in with your generated Login ID & Password' : 'Sign in with administrative credentials'}
+              ${isEmployee ? 'Sign in with your generated Login ID & Password or Face ID' : 'Sign in with administrative credentials or Face ID'}
             </p>
+          </div>
+
+          <!-- ArcFace Biometric Sign In Button -->
+          <div style="margin-bottom:1.25rem;">
+            <button type="button" class="btn btn-primary" style="width:100%; background:linear-gradient(135deg,#6366f1,#06b6d4); box-shadow:0 0 15px rgba(99,102,241,0.3); padding:0.7rem;" onclick="FaceBiometricModal.open('FACE_LOGIN')">
+              <i class="fa-solid fa-expand"></i> ⚡ Sign In with Face ID (ArcFace 512-D)
+            </button>
+            <div style="display:flex; align-items:center; gap:0.5rem; margin:1rem 0; color:var(--text-muted); font-size:0.75rem; text-transform:uppercase;">
+              <div style="flex:1; height:1px; background:var(--border-subtle);"></div>
+              <span>Or sign in with password</span>
+              <div style="flex:1; height:1px; background:var(--border-subtle);"></div>
+            </div>
           </div>
 
           <form id="login-form" onsubmit="App.handleRoleLogin(event, '${role}')">
@@ -233,7 +261,7 @@ const App = {
               <input type="password" class="form-input" id="login-pass-input" placeholder="••••••••" required autocomplete="current-password">
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width:100%; margin-top:1rem; padding:0.75rem;">
+            <button type="submit" class="btn btn-secondary" style="width:100%; margin-top:1rem; padding:0.75rem; font-weight:700;">
               <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In to ${role} Portal
             </button>
           </form>
@@ -399,7 +427,7 @@ const App = {
   },
 
   // =========================================================================
-  // 2. DEDICATED PROFILE PAGE VIEW
+  // 2. DEDICATED PROFILE PAGE VIEW (EMPLOYEE & ADMIN)
   // =========================================================================
   async renderProfilePage(container) {
     container.innerHTML = `
@@ -408,43 +436,93 @@ const App = {
       </div>
     `;
 
-    const empId = Auth.user.employee_id;
-    if (!empId) {
-      // Admin account
-      container.innerHTML = `
-        <div class="profile-banner-card">
-          <div class="profile-user-hero">
-            <div style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:2.5rem; color:#fff;">
-              <i class="fa-solid fa-user-shield"></i>
-            </div>
-            <div>
-              <h1 style="font-size:1.8rem; font-weight:800;">System Administrator</h1>
-              <p style="color:var(--text-secondary);">Master HR & Security Operations Account • ID: admin</p>
-            </div>
-          </div>
-          <div>
-            <button class="btn btn-primary" onclick="App.navigate('change-password')">
-              <i class="fa-solid fa-key"></i> Change Admin Password
-            </button>
-          </div>
-        </div>
-      `;
-      return;
-    }
+    const empId = Auth.user.employee_id || (Auth.user.role === 'ADMIN' ? 'emp_admin' : 'emp_001');
 
     try {
-      const empRes = await API.employees.getById(empId);
+      let empRes;
+      try {
+        empRes = await API.employees.getById(empId);
+      } catch (e) {
+        // Fallback for admin
+        empRes = { data: Auth.employee || db?.findOne?.('employees', em => em.id === 'emp_admin') };
+      }
+
       let salData = null;
-      if (Auth.isAdmin()) {
+      if (Auth.isAdmin() && empId) {
         try {
           const salRes = await API.salary.getByEmployee(empId);
           salData = salRes.data;
         } catch (e) {}
       }
-      container.innerHTML = ProfileDrawerComponent.renderDedicatedPage(empRes.data, salData);
+
+      if (empRes && empRes.data) {
+        container.innerHTML = ProfileDrawerComponent.renderDedicatedPage(empRes.data, salData);
+      } else {
+        container.innerHTML = `
+          <div class="profile-banner-card">
+            <div class="profile-user-hero">
+              <div style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; font-size:2.5rem; color:#fff;">
+                <i class="fa-solid fa-user-shield"></i>
+              </div>
+              <div>
+                <h1 style="font-size:1.8rem; font-weight:800;">System Administrator</h1>
+                <p style="color:var(--text-secondary);">Master HR & Security Operations Account • ID: admin</p>
+              </div>
+            </div>
+            <div>
+              <button class="btn btn-primary" onclick="App.navigate('change-password')">
+                <i class="fa-solid fa-key"></i> Change Admin Password
+              </button>
+            </div>
+          </div>
+        `;
+      }
     } catch (err) {
       this.showToast(err.message, 'error');
     }
+  },
+
+  showPunchPopup(title, message, isCheckIn, details = {}) {
+    const root = document.getElementById('modals-root');
+    const color = isCheckIn ? '#10b981' : '#f59e0b';
+    const glow = isCheckIn ? 'rgba(16,185,129,0.4)' : 'rgba(245,158,11,0.4)';
+    const icon = isCheckIn ? 'fa-solid fa-circle-check' : 'fa-solid fa-right-from-bracket';
+
+    root.innerHTML = `
+      <div class="modal-backdrop" id="punch-popup-modal">
+        <div class="modal-dialog" style="max-width:440px; text-align:center; background:#0b1120; border:1px solid ${color}; box-shadow:0 0 40px ${glow};">
+          <div class="modal-body" style="padding:2.25rem 1.5rem;">
+            <div style="width:68px; height:68px; border-radius:50%; background:${color}20; border:2px solid ${color}; display:flex; align-items:center; justify-content:center; color:${color}; font-size:2rem; margin:0 auto 1.25rem; box-shadow:0 0 25px ${glow}; animation:scaleUp 0.3s cubic-bezier(0.16,1,0.3,1);">
+              <i class="${icon}"></i>
+            </div>
+            <h3 style="font-size:1.4rem; font-weight:800; color:#ffffff;">${title}</h3>
+            <p style="font-size:0.9rem; color:#cbd5e1; margin-top:6px; line-height:1.5;">${message}</p>
+            
+            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-lg); padding:1rem; margin-top:1.25rem; text-align:left; font-size:0.85rem;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                <span style="color:var(--text-muted);">Timestamp:</span>
+                <strong style="color:#a5b4fc; font-family:var(--font-mono);">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'})}</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                <span style="color:var(--text-muted);">State Indicator:</span>
+                <span>${isCheckIn ? '<span class="status-pill status-present"><span class="status-dot-present"></span> Present</span>' : '<span class="status-pill status-absent">Completed</span>'}</span>
+              </div>
+              ${details.workHours ? `
+                <div style="display:flex; justify-content:space-between;">
+                  <span style="color:var(--text-muted);">Work Hours Logged:</span>
+                  <strong style="color:#34d399;">${details.workHours} hrs (Overtime: +${details.extraHours || 0}h)</strong>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+          <div class="modal-footer" style="justify-content:center; background:rgba(15,23,42,0.6); border-top:1px solid rgba(255,255,255,0.08);">
+            <button class="btn btn-primary" style="background:${color}; color:${isCheckIn ? '#064e3b' : '#fff'}; width:100%; font-weight:700;" onclick="App.closeModal()">
+              Done & Return to Workspace
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
   },
 
   // =========================================================================
@@ -815,8 +893,9 @@ const App = {
   async handleCheckIn() {
     try {
       const res = await API.attendance.checkIn();
-      this.showToast(res.message, 'success');
+      this.showPunchPopup('Checked In Successfully! 🟢', res.message || 'Your check-in timestamp is recorded. Dashboard status is now Present.', true);
       await State.refreshTodayAttendance();
+      await State.refreshOverview();
       this.navigate('attendance');
     } catch (err) {
       this.showToast(err.message, 'error');
@@ -826,8 +905,13 @@ const App = {
   async handleCheckOut() {
     try {
       const res = await API.attendance.checkOut(0);
-      this.showToast(res.message, 'success');
+      const att = res.attendance || {};
+      this.showPunchPopup('Checked Out Successfully! 🏁', res.message || 'Work hours and overtime have been computed and synchronized.', false, {
+        workHours: att.work_hours || 8,
+        extraHours: att.extra_hours || 0
+      });
       await State.refreshTodayAttendance();
+      await State.refreshOverview();
       this.navigate('attendance');
     } catch (err) {
       this.showToast(err.message, 'error');
