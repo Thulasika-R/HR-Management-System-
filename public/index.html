@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dayflow HRMS — Integrated Enterprise Human Resource System</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body class="dark-theme">
+  <div id="app">
+    <!-- Top Navigation Header -->
+    <header id="main-header" class="header hidden">
+      <div class="header-container">
+        <div class="brand-wrapper" onclick="App.navigate('dashboard')">
+          <div class="brand-icon">
+            <i class="fa-solid fa-layer-group"></i>
+          </div>
+          <div class="brand-text">
+            <span class="brand-name">DAYFLOW</span>
+            <span class="brand-badge">HRMS</span>
+          </div>
+        </div>
+
+        <nav class="main-nav">
+          <button class="nav-item active" data-view="dashboard" onclick="App.navigate('dashboard')">
+            <i class="fa-solid fa-users-rectangle"></i>
+            <span>Dashboard</span>
+          </button>
+          <button class="nav-item" data-view="attendance" onclick="App.navigate('attendance')">
+            <i class="fa-regular fa-clock"></i>
+            <span>Attendance</span>
+          </button>
+          <button class="nav-item" data-view="timeoff" onclick="App.navigate('timeoff')">
+            <i class="fa-regular fa-calendar-days"></i>
+            <span>Time Off</span>
+          </button>
+          <button class="nav-item" data-view="payroll" onclick="App.navigate('payroll')">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+            <span>Payroll</span>
+          </button>
+          <button class="nav-item" data-view="analytics" onclick="App.navigate('analytics')">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Analytics</span>
+          </button>
+        </nav>
+
+        <div class="header-actions">
+          <!-- Realtime clock widget -->
+          <div class="header-time" id="header-live-time">
+            <i class="fa-regular fa-clock"></i>
+            <span id="live-clock-text">--:--:--</span>
+          </div>
+
+          <!-- Dark / Light Theme Toggle Switcher -->
+          <button class="icon-btn theme-toggle-btn" id="theme-toggle-btn" onclick="App.toggleTheme()" title="Toggle Dark / Light Mode">
+            <i class="fa-solid fa-sun" id="theme-toggle-icon" style="color:#f59e0b;"></i>
+          </button>
+
+          <!-- Notification Bell -->
+          <div class="notification-wrapper">
+            <button class="icon-btn" onclick="App.toggleNotifications()" title="Notifications">
+              <i class="fa-regular fa-bell"></i>
+              <span class="badge-dot" id="notif-badge" style="display:none;"></span>
+            </button>
+            <div id="notif-dropdown" class="dropdown-menu notif-menu hidden">
+              <div class="dropdown-header">
+                <h4>Notifications</h4>
+                <span class="badge badge-sm badge-info" id="notif-count">0 New</span>
+              </div>
+              <div class="notif-list" id="notif-items">
+                <div class="empty-state-sm">No new notifications</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Profile Dropdown -->
+          <div class="user-menu-wrapper">
+            <div class="user-pill" onclick="App.toggleUserMenu()">
+              <img id="user-nav-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=admin" alt="Avatar" class="avatar-sm">
+              <div class="user-info-text">
+                <span class="user-name" id="user-nav-name">Administrator</span>
+                <span class="user-role-badge" id="user-nav-role">ADMIN</span>
+              </div>
+              <i class="fa-solid fa-chevron-down caret-icon"></i>
+            </div>
+            
+            <div id="user-dropdown" class="dropdown-menu hidden">
+              <div class="user-dropdown-header">
+                <div class="dropdown-user-name" id="dropdown-name">Admin User</div>
+                <div class="dropdown-user-id" id="dropdown-id">ID: admin</div>
+              </div>
+              <hr class="dropdown-divider">
+              <button class="dropdown-item" onclick="App.openMyProfile()">
+                <i class="fa-regular fa-user"></i>
+                <span>My Profile</span>
+              </button>
+              <button class="dropdown-item" onclick="App.openPasswordModal()">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>Change Password</span>
+              </button>
+              <hr class="dropdown-divider">
+              <button class="dropdown-item text-danger" onclick="App.openLogoutConfirm()">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <span>Log Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Dynamic Container -->
+    <main id="main-content" class="main-container">
+      <!-- Dynamic Views Injected Here by JS -->
+    </main>
+
+    <!-- Global Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Modals Container -->
+    <div id="modals-root"></div>
+  </div>
+
+  <!-- JavaScript Modules -->
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/components/navbar.js"></script>
+  <script src="js/components/employeeCard.js"></script>
+  <script src="js/components/checkInWidget.js"></script>
+  <script src="js/components/payslipModal.js"></script>
+  <script src="js/components/leaveModal.js"></script>
+  <script src="js/components/profileDrawer.js"></script>
+  <script src="js/components/faceBiometricModal.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
