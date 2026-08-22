@@ -1064,3 +1064,107 @@
   color: #fff;
   border-color: var(--primary);
 }
+
+/* --------------------------------------------------------------------------
+   13. Dayflow Vision Ω — ArcFace AI Biometric Scanner HUD
+   -------------------------------------------------------------------------- */
+.face-scanner-viewport {
+  position: relative;
+  width: 100%;
+  max-width: 580px;
+  height: 380px;
+  margin: 0 auto;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: #020617;
+  border: 2px solid rgba(99, 102, 241, 0.4);
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8), 0 0 25px rgba(99, 102, 241, 0.2);
+}
+
+.scanner-grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(99, 102, 241, 0.08) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(99, 102, 241, 0.08) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+}
+
+.scanner-laser-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #34d399, #6366f1, #34d399, transparent);
+  box-shadow: 0 0 15px #34d399;
+  animation: laserScan 2.5s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes laserScan {
+  0% { top: 5%; opacity: 0.8; }
+  50% { opacity: 1; }
+  100% { top: 92%; opacity: 0.8; }
+}
+
+.scanner-bounding-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 220px;
+  height: 270px;
+  border: 1px dashed rgba(99, 102, 241, 0.5);
+  border-radius: var(--radius-md);
+  pointer-events: none;
+}
+
+.box-corner {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: #34d399;
+  border-style: solid;
+}
+.box-corner.tl { top: -2px; left: -2px; border-width: 3px 0 0 3px; }
+.box-corner.tr { top: -2px; right: -2px; border-width: 3px 3px 0 0; }
+.box-corner.bl { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; }
+.box-corner.br { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; }
+
+.face-target-tag {
+  position: absolute;
+  top: -24px;
+  left: 0;
+  background: rgba(16, 185, 129, 0.9);
+  color: #064e3b;
+  font-size: 0.65rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+}
+
+.scanner-hud-bottom {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.hud-stat-pill {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
+  padding: 4px 12px;
+  font-size: 0.725rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+

@@ -62,6 +62,16 @@ const CheckInWidgetComponent = {
 
         ${punchBtnHtml}
 
+        <!-- ArcFace AI Biometric Innovation Options -->
+        <div style="width:100%; display:flex; flex-direction:column; gap:0.5rem; margin-top:0.5rem;">
+          <button class="btn btn-primary btn-sm" style="width:100%; background:linear-gradient(135deg,#6366f1,#06b6d4); box-shadow:0 0 15px rgba(99,102,241,0.3);" onclick="FaceBiometricModal.open('PUNCH')">
+            <i class="fa-solid fa-expand"></i> ArcFace Touchless Face Scan
+          </button>
+          <button class="btn btn-secondary btn-sm" style="width:100%; font-size:0.75rem;" onclick="FaceBiometricModal.open('KIOSK')">
+            <i class="fa-solid fa-building-user"></i> Launch Reception AI Kiosk Terminal
+          </button>
+        </div>
+
         <div style="display:flex; gap:1.5rem; width:100%; border-top:1px solid var(--border-subtle); padding-top:1.25rem; justify-content:center;">
           <div style="text-align:center;">
             <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase;">Required</div>
