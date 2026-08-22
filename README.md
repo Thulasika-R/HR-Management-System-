@@ -1,15 +1,15 @@
-# DAYFLOW HRMS — Integrated Enterprise Human Resource Management System
+# EMPLYRA HRMS — Next-Gen AI Human Resource Ecosystem
 
-> **Odoo Hackathon Project**  
-> Built with an **Integrated Attendance–Leave–Payable-Day–Payroll Engine** adhering strictly to all Evaluator Specifications & RBAC Security Constraints.
+> **Emplyra** = **Employee + Modern Platform** *(Directly engineered for enterprise Human Resource operations)*  
+> Built with an **Integrated Attendance–Leave–Payable-Day–Payroll Engine**, **ArcFace 512-D Biometric Face ID Verification**, and **High-Efficiency Light & Dark Theme System**.
 
 ---
 
 ## 🌟 Core Architecture: The Connected State Engine
 
-Unlike traditional HRMS tools that treat Attendance, Time-Off, and Payroll as detached CRUD tables, **Dayflow HRMS** connects them into a single reactive pipeline:
+Unlike traditional HRMS tools that treat Attendance, Time-Off, and Payroll as detached CRUD tables, **Emplyra HRMS** connects them into a single reactive pipeline:
 
-$$\boxed{\text{Employee} \longrightarrow \text{Attendance} \longrightarrow \text{Time-Off} \longrightarrow \text{Payable Days Engine} \longrightarrow \text{Salary Calculation Engine} \longrightarrow \text{Payroll}}$$
+$$\boxed{\text{Employee} \longrightarrow \text{Biometric Attendance} \longrightarrow \text{Time-Off} \longrightarrow \text{Payable Days Engine} \longrightarrow \text{Salary Calculation Engine} \longrightarrow \text{Payroll}}$$
 
 ---
 
