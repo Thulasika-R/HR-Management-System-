@@ -1,5 +1,5 @@
 /**
- * Dayflow Vision Ω — ArcFace / FaceNet Biometric AI Facial Recognition Component
+ * Emplyra Vision Ω — ArcFace / FaceNet Biometric AI Facial Recognition Component
  * Provides:
  * 1. Live Camera HUD with scanning laser and 68-point landmarks
  * 2. 512-D Deep Metric Feature Vector extraction

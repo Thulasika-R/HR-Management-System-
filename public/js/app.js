@@ -196,9 +196,9 @@ const App = {
           <div style="width:56px; height:56px; border-radius:var(--radius-md); background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.85rem; margin:0 auto 1.25rem; box-shadow:0 0 25px var(--primary-glow);">
             <i class="fa-solid fa-layer-group"></i>
           </div>
-          <h1 style="font-size:2.25rem; font-weight:800; letter-spacing:-0.03em;">Welcome to DAYFLOW</h1>
+          <h1 style="font-size:2.25rem; font-weight:800; letter-spacing:-0.03em;">Welcome to EMPLYRA</h1>
           <p style="font-size:1rem; color:var(--text-secondary); margin-top:8px;">
-            Select your organizational role to proceed to the dedicated workspace portal.
+            <strong>Employee + Modern Platform</strong> — Next-Gen AI Human Resource Ecosystem. Select your role to continue:
           </p>
         </div>
 
@@ -239,7 +239,7 @@ const App = {
               <i class="fa-solid fa-expand"></i>
             </div>
             <div>
-              <h3 style="font-size:1.15rem; color:#fff;">Dayflow Vision Ω — ArcFace Biometric Sign-In</h3>
+              <h3 style="font-size:1.15rem; color:#fff;">Emplyra Vision Ω — ArcFace Biometric Sign-In</h3>
               <p style="font-size:0.825rem; color:#c7d2fe; margin-top:2px;">Touchless 512-D Deep Metric Face ID authentication with anti-spoof liveness shield</p>
             </div>
           </div>
