@@ -147,6 +147,8 @@ const LEAVE_TYPES_POLICY = [
   }
 ];
 
+const arcfaceEngine = require('../services/arcfaceEngine');
+
 class Database {
   constructor() {
     this.data = {
@@ -345,6 +347,9 @@ class Database {
     const todayStr = new Date().toISOString().split('T')[0];
 
     sampleEmployees.forEach((emp, index) => {
+      emp.face_embedding = arcfaceEngine.generateSimulatedEmbedding(emp.id);
+      emp.face_enrolled = true;
+
       users.push({
         id: `usr_${emp.id}`,
         login_id: emp.login_id,
