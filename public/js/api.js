@@ -81,7 +81,15 @@ const API = {
     }),
     getTodayStatus: () => API.request('/attendance/today-status'),
     getMyLogs: (month) => API.request(`/attendance/my-logs${month ? `?month=${month}` : ''}`),
-    getAll: (date, department) => API.request(`/attendance/all?date=${date || ''}&department=${department || ''}`)
+    getAll: (date, department) => API.request(`/attendance/all?date=${date || ''}&department=${department || ''}`),
+    facePunch: (payload) => API.request('/attendance/face-punch', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    }),
+    faceEnroll: (employeeId, vector) => API.request('/attendance/face-enroll', {
+      method: 'POST',
+      body: JSON.stringify({ employee_id: employeeId, embedding_vector: vector })
+    })
   },
 
   // Time-Off Endpoints
