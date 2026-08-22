@@ -1,14 +1,14 @@
 {
-  "name": "dayflow-hrms",
-  "version": "1.0.0",
-  "description": "Dayflow - Integrated Human Resource Management System with Attendance-Leave-Payroll Engine",
+  "name": "emplyra-hrms",
+  "version": "1.4.0",
+  "description": "Emplyra (Employee + Modern Platform) — Next-Gen AI Human Resource Ecosystem",
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
     "dev": "node server/server.js"
   },
-  "keywords": ["hrms", "payroll", "attendance", "time-off", "odoo-hackathon", "dayflow"],
-  "author": "Dayflow Team",
+  "keywords": ["emplyra", "hrms", "employee", "modern-platform", "arcface-biometrics", "payroll", "attendance"],
+  "author": "Emplyra Team (Thulasika-R & Rudhran2007)",
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",

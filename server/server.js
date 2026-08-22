@@ -28,8 +28,8 @@ app.use('/api/analytics', require('./routes/analytics'));
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
-    version: '1.0.0',
-    service: 'Dayflow HRMS Engine',
+    version: '1.4.0',
+    service: 'Emplyra HRMS Platform (Employee + Modern Platform)',
     timestamp: new Date().toISOString()
   });
 });
@@ -51,7 +51,7 @@ app.use((err, req, res, next) => {
 // Start Server
 app.listen(config.PORT, () => {
   console.log(`====================================================`);
-  console.log(`🚀 Dayflow HRMS Platform Running Live on Port: ${config.PORT}`);
+  console.log(`🚀 EMPLYRA HRMS (Employee + Modern Platform) Running on Port: ${config.PORT}`);
   console.log(`🌐 Web UI: http://localhost:${config.PORT}`);
   console.log(`🔑 Admin Login: ID: admin | Password: admin123`);
   console.log(`🔑 Sample Employee: ID: OITODO20230001 | Password: welcome123`);
