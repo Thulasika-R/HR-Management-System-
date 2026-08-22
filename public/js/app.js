@@ -11,6 +11,7 @@ const App = {
   breadcrumbs: [],
 
   init() {
+    this.initTheme();
     if (!Auth.isAuthenticated()) {
       this.renderRoleLanding();
     } else if (Auth.user.force_password_change) {
@@ -20,6 +21,37 @@ const App = {
       NavbarComponent.init();
       this.navigate('dashboard');
     }
+  },
+
+  initTheme() {
+    const savedTheme = localStorage.getItem('dayflow_theme') || 'dark';
+    this.setTheme(savedTheme);
+  },
+
+  toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = current === 'light' ? 'dark' : 'light';
+    this.setTheme(next);
+    this.showToast(`Switched to ${next === 'light' ? 'Light Theme ☀️' : 'Dark Theme 🌙'}`, 'info');
+  },
+
+  setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('dayflow_theme', theme);
+    
+    // Update all theme toggle icons across the UI
+    const icons = document.querySelectorAll('.theme-toggle-icon, #theme-toggle-icon');
+    icons.forEach(icon => {
+      if (theme === 'light') {
+        icon.className = 'fa-solid fa-moon';
+        icon.style.color = '#4f46e5';
+        if (icon.parentElement) icon.parentElement.title = 'Switch to Dark Mode';
+      } else {
+        icon.className = 'fa-solid fa-sun';
+        icon.style.color = '#f59e0b';
+        if (icon.parentElement) icon.parentElement.title = 'Switch to Light Mode';
+      }
+    });
   },
 
   showHeader() {
@@ -149,9 +181,17 @@ const App = {
     this.hideHeader();
     this.updateBreadcrumbs('role-landing');
     const main = document.getElementById('main-content');
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
 
     main.innerHTML = `
-      <div class="role-landing-page">
+      <div class="role-landing-page" style="position:relative;">
+        <!-- Floating Theme Toggle for Landing -->
+        <div style="position:absolute; top:1rem; right:1.5rem;">
+          <button class="icon-btn theme-toggle-btn" onclick="App.toggleTheme()" title="Toggle Theme" style="box-shadow:var(--shadow-md);">
+            <i class="${isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun'}" style="color:${isLight ? '#4f46e5' : '#f59e0b'};"></i>
+          </button>
+        </div>
+
         <div class="role-landing-header">
           <div style="width:56px; height:56px; border-radius:var(--radius-md); background:linear-gradient(135deg,#6366f1,#8b5cf6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.85rem; margin:0 auto 1.25rem; box-shadow:0 0 25px var(--primary-glow);">
             <i class="fa-solid fa-layer-group"></i>
@@ -215,6 +255,7 @@ const App = {
     this.selectedRolePortal = role;
     this.hideHeader();
     const main = document.getElementById('main-content');
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
 
     const isEmployee = role === 'EMPLOYEE';
     const title = isEmployee ? 'Employee Authentication' : 'Administrator Sign In';
@@ -222,9 +263,16 @@ const App = {
     const badgeText = isEmployee ? 'EMPLOYEE PORTAL' : 'ADMIN PRIVILEGE';
 
     main.innerHTML = `
-      <div class="login-page">
+      <div class="login-page" style="position:relative;">
+        <!-- Floating Theme Toggle for Login -->
+        <div style="position:absolute; top:1.5rem; right:2rem;">
+          <button class="icon-btn theme-toggle-btn" onclick="App.toggleTheme()" title="Toggle Theme" style="box-shadow:var(--shadow-md);">
+            <i class="${isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun'}" style="color:${isLight ? '#4f46e5' : '#f59e0b'};"></i>
+          </button>
+        </div>
+
         <div class="login-card">
-          <div style="margin-bottom:1rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
             <button class="btn btn-sm btn-secondary" onclick="App.renderRoleLanding()">
               <i class="fa-solid fa-arrow-left"></i> Change Role
             </button>
