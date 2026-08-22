@@ -11,9 +11,13 @@ const arcfaceEngine = require('../services/arcfaceEngine');
  * Records check-in timestamp and turns card indicator 🟢 Green
  */
 router.post('/check-in', authenticateToken, (req, res) => {
-  const employeeId = req.user.employeeId;
+  let employeeId = req.user.employeeId;
   if (!employeeId) {
-    return res.status(400).json({ success: false, message: 'Admin account has no linked employee attendance.' });
+    const adminEmp = db.findOne('employees', e => e.login_id === 'admin' || e.id === 'emp_admin');
+    if (adminEmp) employeeId = adminEmp.id;
+  }
+  if (!employeeId) {
+    return res.status(400).json({ success: false, message: 'No linked employee profile for attendance.' });
   }
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -69,35 +73,39 @@ router.post('/check-in', authenticateToken, (req, res) => {
  * Calculates WorkHours = CheckOut - CheckIn - BreakHours, ExtraHours = max(0, WorkHours - 8)
  */
 router.post('/check-out', authenticateToken, (req, res) => {
-  const employeeId = req.user.employeeId;
+  let employeeId = req.user.employeeId;
   if (!employeeId) {
-    return res.status(400).json({ success: false, message: 'No linked employee profile.' });
+    const adminEmp = db.findOne('employees', e => e.login_id === 'admin' || e.id === 'emp_admin');
+    if (adminEmp) employeeId = adminEmp.id;
+  }
+  const { break_hours } = req.body;
+
+  if (!employeeId) {
+    return res.status(400).json({ success: false, message: 'No linked employee profile for attendance.' });
   }
 
   const todayStr = new Date().toISOString().split('T')[0];
   const nowIso = new Date().toISOString();
 
-  const record = db.findOne('attendance', a => a.employee_id === employeeId && a.date === todayStr);
-  if (!record || !record.check_in) {
-    return res.status(400).json({ success: false, message: 'You have not checked in today.' });
+  let existing = db.findOne('attendance', a => a.employee_id === employeeId && a.date === todayStr);
+  if (!existing || !existing.check_in) {
+    return res.status(400).json({ success: false, message: 'No active check-in found for today.' });
   }
-  if (record.check_out) {
-    return res.status(400).json({ success: false, message: 'You have already checked out today.' });
+  if (existing.check_out) {
+    return res.status(400).json({ success: false, message: 'You have already checked out for today.' });
   }
 
-  const inTime = new Date(record.check_in).getTime();
+  const inTime = new Date(existing.check_in).getTime();
   const outTime = new Date(nowIso).getTime();
-  const rawDiffHours = (outTime - inTime) / (1000 * 60 * 60);
+  const grossHours = Math.max(0, (outTime - inTime) / (1000 * 60 * 60));
+  const breakH = parseFloat(break_hours) || 0;
+  const netHours = Math.round(Math.max(0, grossHours - breakH) * 10) / 10;
+  const extraHours = Math.round(Math.max(0, netHours - 8) * 10) / 10;
 
-  const breakHours = Number(req.body.break_hours) || (rawDiffHours > 5 ? 1 : 0);
-  const workHours = Math.max(0, Number((rawDiffHours - breakHours).toFixed(2)));
-  const requiredHours = config.REQUIRED_DAILY_HOURS || 8;
-  const extraHours = Math.max(0, Number((workHours - requiredHours).toFixed(2)));
-
-  const updated = db.update('attendance', a => a.id === record.id, {
+  existing = db.update('attendance', a => a.id === existing.id, {
     check_out: nowIso,
-    break_hours: breakHours,
-    work_hours: workHours,
+    break_hours: breakH,
+    work_hours: netHours,
     extra_hours: extraHours,
     updated_at: nowIso
   });
@@ -107,14 +115,14 @@ router.post('/check-out', authenticateToken, (req, res) => {
     action: 'ATTENDANCE_CHECK_OUT',
     actor_login_id: req.user.loginId,
     actor_role: req.user.role,
-    details: `Checked out at ${new Date(nowIso).toLocaleTimeString()}. Work hours: ${workHours}h (Extra: ${extraHours}h)`,
+    details: `Checked out at ${new Date(nowIso).toLocaleTimeString()} (Work: ${netHours}h, Extra: ${extraHours}h)`,
     timestamp: nowIso
   });
 
   return res.json({
     success: true,
-    message: `Checked out successfully! Total: ${workHours} hrs worked.`,
-    data: updated
+    message: `Checked out successfully. Work Hours: ${netHours} hrs (${extraHours} hrs overtime).`,
+    attendance: existing
   });
 });
 
@@ -123,46 +131,40 @@ router.post('/check-out', authenticateToken, (req, res) => {
  * Evaluator requirement: Live status and "Since HH:MM AM/PM" timer
  */
 router.get('/today-status', authenticateToken, (req, res) => {
-  const employeeId = req.user.employeeId;
+  let employeeId = req.user.employeeId;
   if (!employeeId) {
-    return res.json({ success: true, data: { status: 'ADMIN', is_checked_in: false } });
+    const adminEmp = db.findOne('employees', e => e.login_id === 'admin' || e.id === 'emp_admin');
+    if (adminEmp) employeeId = adminEmp.id;
   }
-
   const todayStr = new Date().toISOString().split('T')[0];
-  const record = db.findOne('attendance', a => a.employee_id === employeeId && a.date === todayStr);
 
-  // Check if leave today
-  const hasLeaveToday = db.findOne('leave_requests', l => 
-    l.employee_id === employeeId && 
-    l.status === 'APPROVED' && 
-    todayStr >= l.start_date && 
-    todayStr <= l.end_date
-  );
-
-  let status = 'ABSENT';
-  let isCheckedIn = false;
-
-  if (hasLeaveToday) {
-    status = 'LEAVE';
-  } else if (record && record.check_in && !record.check_out) {
-    status = 'PRESENT';
-    isCheckedIn = true;
-  } else if (record && record.check_out) {
-    status = 'COMPLETED';
-    isCheckedIn = false;
+  if (!employeeId) {
+    return res.json({
+      success: true,
+      has_attendance: false,
+      is_checked_in: false,
+      status: 'ADMIN_SUPERUSER'
+    });
   }
+
+  const att = db.findOne('attendance', a => a.employee_id === employeeId && a.date === todayStr);
+  const leave = db.findOne('leave_requests', l => l.employee_id === employeeId && l.status === 'APPROVED' && todayStr >= l.start_date && todayStr <= l.end_date);
+
+  let currentStatus = 'ABSENT';
+  if (leave) currentStatus = 'LEAVE';
+  else if (att && att.check_in && !att.check_out) currentStatus = 'PRESENT';
+  else if (att && att.check_out) currentStatus = 'COMPLETED';
 
   return res.json({
     success: true,
-    data: {
-      status,
-      is_checked_in: isCheckedIn,
-      check_in: record?.check_in || null,
-      check_out: record?.check_out || null,
-      work_hours: record?.work_hours || 0,
-      extra_hours: record?.extra_hours || 0,
-      leave_details: hasLeaveToday || null
-    }
+    has_attendance: !!att,
+    is_checked_in: !!(att && att.check_in && !att.check_out),
+    check_in: att?.check_in || null,
+    check_out: att?.check_out || null,
+    work_hours: att?.work_hours || 0,
+    extra_hours: att?.extra_hours || 0,
+    status: currentStatus,
+    leave: leave
   });
 });
 
@@ -171,7 +173,11 @@ router.get('/today-status', authenticateToken, (req, res) => {
  * Evaluator constraint: Count of days present, Leave count, Total working days, and daily log
  */
 router.get('/my-logs', authenticateToken, (req, res) => {
-  const employeeId = req.user.employeeId;
+  let employeeId = req.user.employeeId;
+  if (!employeeId) {
+    const adminEmp = db.findOne('employees', e => e.login_id === 'admin' || e.id === 'emp_admin');
+    if (adminEmp) employeeId = adminEmp.id;
+  }
   if (!employeeId) {
     return res.status(400).json({ success: false, message: 'No linked employee profile.' });
   }

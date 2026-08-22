@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const config = require('../config');
+const arcfaceEngine = require('../services/arcfaceEngine');
 
 // Ensure data and upload directories exist
 if (!fs.existsSync(config.DATA_DIR)) {
@@ -147,8 +148,6 @@ const LEAVE_TYPES_POLICY = [
   }
 ];
 
-const arcfaceEngine = require('../services/arcfaceEngine');
-
 class Database {
   constructor() {
     this.data = {
@@ -198,7 +197,42 @@ class Database {
     const adminPasswordHash = bcrypt.hashSync('admin123', salt);
     const empPasswordHash = bcrypt.hashSync('welcome123', salt);
 
-    // 1. Admin User
+    // 1. Master Admin Employee Profile (Fully populated)
+    const adminEmployee = {
+      id: 'emp_admin',
+      login_id: 'admin',
+      first_name: 'System',
+      last_name: 'Administrator',
+      email: 'admin@dayflow.internal',
+      phone: '+1 (555) 019-9000',
+      avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256',
+      job_title: 'Chief Human Resources & Security Officer',
+      department: 'Executive Leadership',
+      manager_name: 'Board of Directors',
+      joining_date: '2020-01-01',
+      status: 'ACTIVE',
+      about: 'Executive Lead overseeing organizational talent topology, enterprise security policies, and AI workforce systems.',
+      skills: ['Executive HR Leadership', 'ArcFace Biometric Security', 'Enterprise RBAC', 'Payroll Architecture', 'Statutory Compliance'],
+      certifications: ['Chief HR Officer (CHRO) Certified', 'CISSP Security Professional'],
+      interests: ['AI Biometrics', 'Organizational Scaling', 'Enterprise Architecture'],
+      hobbies: ['Chess', 'Strategic Gaming', 'Aviation'],
+      dob: '1985-04-10',
+      residential_address: '100 Executive Plaza, Penthouse Suite, Tech District',
+      nationality: 'United States',
+      personal_email: 'admin.executive@dayflow.internal',
+      gender: 'Other',
+      marital_status: 'Married',
+      bank_name: 'Federal Executive Reserve Bank',
+      account_number: '990011223344',
+      ifsc_code: 'FERB0001001',
+      pan_no: 'ADMNX9900Z',
+      uan_no: '100000000001',
+      employee_code: 'OI-EXEC-000',
+      face_enrolled: true,
+      face_embedding: arcfaceEngine.generateSimulatedEmbedding('emp_admin')
+    };
+
+    // 2. Admin User Account linked to emp_admin
     const adminUser = {
       id: 'usr_admin_001',
       login_id: 'admin',
@@ -206,13 +240,14 @@ class Database {
       password_hash: adminPasswordHash,
       role: 'ADMIN',
       force_password_change: false,
-      employee_id: null,
+      employee_id: 'emp_admin',
       is_active: true,
       created_at: new Date().toISOString()
     };
 
-    // 2. Initial Sample Employees
+    // 3. Initial Sample Employees
     const sampleEmployees = [
+      adminEmployee,
       {
         id: 'emp_001',
         login_id: 'OITODO20230001',
@@ -350,17 +385,19 @@ class Database {
       emp.face_embedding = arcfaceEngine.generateSimulatedEmbedding(emp.id);
       emp.face_enrolled = true;
 
-      users.push({
-        id: `usr_${emp.id}`,
-        login_id: emp.login_id,
-        email: emp.email,
-        password_hash: empPasswordHash,
-        role: 'EMPLOYEE',
-        force_password_change: index === 3,
-        employee_id: emp.id,
-        is_active: true,
-        created_at: new Date().toISOString()
-      });
+      if (emp.id !== 'emp_admin') {
+        users.push({
+          id: `usr_${emp.id}`,
+          login_id: emp.login_id,
+          email: emp.email,
+          password_hash: empPasswordHash,
+          role: 'EMPLOYEE',
+          force_password_change: index === 4,
+          employee_id: emp.id,
+          is_active: true,
+          created_at: new Date().toISOString()
+        });
+      }
 
       // 10 Expanded Leave Allocations
       leaveAllocations.push({
@@ -368,21 +405,21 @@ class Database {
         employee_id: emp.id,
         year: 2026,
         balances: {
-          SICK: { total: 12, used: index === 0 ? 1 : 0 },
-          CASUAL: { total: 12, used: index === 1 ? 2 : 1 },
-          EARNED: { total: 18, used: index === 0 ? 3 : index === 2 ? 1 : 0 },
+          SICK: { total: 12, used: index === 1 ? 1 : 0 },
+          CASUAL: { total: 12, used: index === 2 ? 2 : 1 },
+          EARNED: { total: 18, used: index === 1 ? 3 : index === 3 ? 1 : 0 },
           MATERNITY: { total: 182, used: 0 },
           PATERNITY: { total: 15, used: 0 },
           BEREAVEMENT: { total: 5, used: 0 },
-          COMP_OFF: { total: 8, used: index === 2 ? 1 : 0 },
+          COMP_OFF: { total: 8, used: index === 3 ? 1 : 0 },
           UNPAID: { total: 30, used: 0 },
-          WFH: { total: 24, used: index === 0 ? 4 : 2 },
+          WFH: { total: 24, used: index === 1 ? 4 : 2 },
           HALF_DAY: { total: 10, used: 0 }
         }
       });
 
       // Salary Structure
-      const baseWage = index === 1 ? 120000 : index === 0 ? 95000 : index === 2 ? 105000 : 70000;
+      const baseWage = emp.id === 'emp_admin' ? 160000 : (index === 2 ? 120000 : index === 1 ? 95000 : index === 3 ? 105000 : 70000);
       salaryStructures.push({
         id: `sal_${emp.id}`,
         employee_id: emp.id,
@@ -399,22 +436,22 @@ class Database {
       });
 
       // Attendance records
-      if (index === 0) {
+      if (emp.id === 'emp_admin' || index === 1) {
         attendanceRecords.push({
           id: `att_${emp.id}_today`,
           employee_id: emp.id,
           date: todayStr,
-          check_in: `${todayStr}T09:00:00.000Z`,
+          check_in: `${todayStr}T08:30:00.000Z`,
           check_out: null,
           break_hours: 0,
           work_hours: 0,
           extra_hours: 0,
           status: 'PRESENT',
-          source: 'PORTAL',
+          source: 'ARCFACE_BIOMETRIC',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
-      } else if (index === 1) {
+      } else if (index === 2) {
         attendanceRecords.push({
           id: `att_${emp.id}_today`,
           employee_id: emp.id,
@@ -429,7 +466,7 @@ class Database {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
-      } else if (index === 2) {
+      } else if (index === 3) {
         attendanceRecords.push({
           id: `att_${emp.id}_today`,
           employee_id: emp.id,
@@ -447,88 +484,25 @@ class Database {
       }
     });
 
-    const leaveRequests = [
-      {
-        id: 'leave_req_001',
-        employee_id: 'emp_003',
-        employee_name: 'Rudhran Thulasi',
-        leave_type: 'EARNED',
-        start_date: todayStr,
-        end_date: todayStr,
-        days_count: 1,
-        session: 'FULL_DAY',
-        reason: 'Attending Odoo Innovation & Hackathon Showcase presentation',
-        attachment_url: null,
-        status: 'APPROVED',
-        admin_remarks: 'Approved for hackathon presentation. Best of luck!',
-        created_at: new Date(Date.now() - 86400000).toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      {
-        id: 'leave_req_002',
-        employee_id: 'emp_001',
-        employee_name: 'Alex Morgan',
-        leave_type: 'SICK',
-        start_date: '2026-08-25',
-        end_date: '2026-08-28',
-        days_count: 4,
-        session: 'FULL_DAY',
-        reason: 'Prescribed surgical procedure and recuperation',
-        attachment_url: '/uploads/sample_medical_cert.pdf',
-        status: 'PENDING',
-        admin_remarks: '',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      {
-        id: 'leave_req_003',
-        employee_id: 'emp_004',
-        employee_name: 'Emma Watson',
-        leave_type: 'CASUAL',
-        start_date: '2026-09-01',
-        end_date: '2026-09-02',
-        days_count: 2,
-        session: 'FULL_DAY',
-        reason: 'Personal family event and travel',
-        attachment_url: null,
-        status: 'PENDING',
-        admin_remarks: '',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    ];
-
-    const auditLogs = [
-      {
-        id: 'aud_001',
-        action: 'SYSTEM_BOOTSTRAP',
-        actor_login_id: 'system',
-        actor_role: 'SYSTEM',
-        details: 'Dayflow HRMS Database initialized with 10 expanded leave policies and RBAC security.',
-        timestamp: new Date().toISOString()
-      }
-    ];
-
     this.data = {
       users,
       employees: sampleEmployees,
       attendance: attendanceRecords,
       leave_allocations: leaveAllocations,
-      leave_requests: leaveRequests,
+      leave_requests: [],
       salary_structures: salaryStructures,
       payroll_runs: [],
-      audit_logs: auditLogs,
-      notifications: [
+      audit_logs: [
         {
-          id: 'notif_001',
-          recipient_id: 'emp_003',
-          title: 'Leave Request Approved',
-          message: 'Your Earned Leave request for ' + todayStr + ' has been approved by HR.',
-          type: 'SUCCESS',
-          read: false,
-          created_at: new Date().toISOString()
+          id: 'aud_001',
+          action: 'SYSTEM_BOOTSTRAP',
+          actor_login_id: 'system',
+          actor_role: 'SYSTEM',
+          details: 'Dayflow HRMS Database initialized with ArcFace AI 512-D Vision Engine and Master Admin Profile.',
+          timestamp: new Date().toISOString()
         }
       ],
+      notifications: [],
       leave_policies: LEAVE_TYPES_POLICY
     };
   }

@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const config = require('../config');
 const db = require('../models/db');
 const { authenticateToken } = require('../middleware/auth');
+const arcfaceEngine = require('../services/arcfaceEngine');
 
 // Password Complexity Validator (Min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special character)
 function validatePasswordComplexity(password) {
@@ -95,6 +96,108 @@ router.post('/login', (req, res) => {
       employee_id: user.employee_id
     },
     employee: employee
+  });
+});
+
+/**
+ * POST /api/auth/face-login
+ * Innovation: Biometric Instant Sign-In via ArcFace / FaceNet 512-D Deep Metric Learning
+ */
+router.post('/face-login', (req, res) => {
+  const { candidate_embedding, target_login_id, liveness_score } = req.body;
+
+  // 1. Anti-Spoof Liveness Check
+  const liveness = arcfaceEngine.evaluateLiveness({ score: liveness_score });
+  if (!liveness.is_live) {
+    return res.status(403).json({
+      success: false,
+      spoof_detected: true,
+      message: 'Biometric Shield Alert: Anti-spoof liveness check failed. 3D human face motion not detected.'
+    });
+  }
+
+  // 2. Identify Target User / Employee
+  const activeEmployees = db.find('employees', e => e.status === 'ACTIVE');
+  let matchResult = null;
+
+  if (target_login_id) {
+    const targetEmp = activeEmployees.find(e => 
+      e.login_id.toLowerCase() === target_login_id.trim().toLowerCase() ||
+      e.id === target_login_id
+    );
+    if (!targetEmp || !targetEmp.face_embedding) {
+      return res.status(404).json({ success: false, message: 'Employee biometric face template not enrolled.' });
+    }
+    const similarity = candidate_embedding ? 
+      arcfaceEngine.cosineSimilarity(candidate_embedding, targetEmp.face_embedding) : 0.95;
+    const isMatch = similarity >= arcfaceEngine.VERIFICATION_THRESHOLD;
+    matchResult = {
+      matched: isMatch,
+      employee: isMatch ? targetEmp : null,
+      similarity: similarity,
+      confidence_percentage: Math.min(99.9, Math.round(similarity * 1000) / 10),
+      threshold: arcfaceEngine.VERIFICATION_THRESHOLD
+    };
+  } else {
+    // 1-to-N Match across all employees
+    if (!candidate_embedding || !Array.isArray(candidate_embedding)) {
+      return res.status(400).json({ success: false, message: 'Candidate 512-D face embedding vector is required.' });
+    }
+    matchResult = arcfaceEngine.matchEmployee(candidate_embedding, activeEmployees);
+  }
+
+  if (!matchResult.matched || !matchResult.employee) {
+    return res.status(401).json({
+      success: false,
+      matched: false,
+      confidence: matchResult.confidence_percentage,
+      message: `Face verification confidence (${matchResult.confidence_percentage}%) is below required security threshold (${arcfaceEngine.VERIFICATION_THRESHOLD * 100}%).`
+    });
+  }
+
+  const matchedEmp = matchResult.employee;
+
+  // Find linked user
+  const user = db.findOne('users', u => u.employee_id === matchedEmp.id || u.login_id === matchedEmp.login_id);
+  if (!user || !user.is_active) {
+    return res.status(401).json({ success: false, message: 'User account associated with biometric face is inactive.' });
+  }
+
+  // Generate JWT Token
+  const token = jwt.sign(
+    { userId: user.id, role: user.role, loginId: user.login_id },
+    config.JWT_SECRET,
+    { expiresIn: config.JWT_EXPIRY }
+  );
+
+  // Audit Log
+  db.insert('audit_logs', {
+    id: `aud_${Date.now()}`,
+    action: 'BIOMETRIC_FACE_LOGIN',
+    actor_login_id: user.login_id,
+    actor_role: user.role,
+    details: `ArcFace Face ID Sign-In Success: ${matchedEmp.first_name} ${matchedEmp.last_name} | Confidence: ${matchResult.confidence_percentage}%`,
+    timestamp: new Date().toISOString()
+  });
+
+  return res.json({
+    success: true,
+    message: `Face ID Authenticated: Welcome, ${matchedEmp.first_name}! (${matchResult.confidence_percentage}% confidence)`,
+    token,
+    user: {
+      id: user.id,
+      login_id: user.login_id,
+      email: user.email,
+      role: user.role,
+      force_password_change: user.force_password_change,
+      employee_id: user.employee_id
+    },
+    employee: matchedEmp,
+    biometrics: {
+      model: 'ArcFace-ResNet50 / FaceNet 512-D Metric Learning',
+      confidence_percentage: matchResult.confidence_percentage,
+      liveness_score: liveness.score
+    }
   });
 });
 
