@@ -111,12 +111,15 @@ const ProfileDrawerComponent = {
               </p>
             </div>
           </div>
-          <div style="display:flex; gap:0.75rem;">
-            <button class="btn btn-primary" onclick="App.openFullProfileModal('${emp.id}')">
-              <i class="fa-solid fa-pen-to-square"></i> Edit Profile Information
+          <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+            <button class="btn btn-primary" style="background:linear-gradient(135deg,#6366f1,#06b6d4);" onclick="FaceBiometricModal.open('ENROLL', '${emp.id}')">
+              <i class="fa-solid fa-expand"></i> Enroll ArcFace Biometrics
+            </button>
+            <button class="btn btn-secondary" onclick="App.openFullProfileModal('${emp.id}')">
+              <i class="fa-solid fa-pen-to-square"></i> Edit Profile
             </button>
             <button class="btn btn-secondary" onclick="App.navigate('change-password')">
-              <i class="fa-solid fa-key"></i> Security Settings
+              <i class="fa-solid fa-key"></i> Security
             </button>
           </div>
         </div>
